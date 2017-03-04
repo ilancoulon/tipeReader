@@ -30,7 +30,7 @@ def nnCostFunction(nn_params, input_layer_size, hidden_layer_size, num_labels,
     Fonction cout, retourne resultat et gradient
     """
     Theta1 = np.reshape(nn_params[:(hidden_layer_size *
-                                    (input_layer_size + 1) - 1)],
+                                    (input_layer_size + 1))],
                         (hidden_layer_size, (input_layer_size + 1)))
 
     Theta2 = np.reshape(nn_params[(hidden_layer_size *
@@ -60,15 +60,20 @@ def nnCostFunction(nn_params, input_layer_size, hidden_layer_size, num_labels,
 
         z2 = np.dot(Theta1, Xi)
         a2 = sigmoid(z2)
-        a2 = np.concatenate((np.ones((1, 1)), a2), axis=1)
+        a2 = np.concatenate((np.ones(1), a2), axis=0)
         z3 = np.dot(Theta2, a2)
         a3 = sigmoid(z3)
 
         J += np.sum(-y_vect * np.log(a3) - (1 - y_vect)*np.log(1 - a3))
 
         little_delta_3 = a3 - y_vect
+
+        print(np.dot(Theta2.T, little_delta_3))
+
+        print(sigmoidGrad(np.concatenate((np.ones(1), z2), axis=0)).shape)
+
         little_delta_2 = np.dot(Theta2.T, little_delta_3) * \
-            sigmoidGrad(np.concatenate((np.ones((1, 1)), z2), axis=1))
+            sigmoidGrad(np.concatenate((np.ones(1), z2), axis=0))
         little_delta_2 = little_delta_2[1:]
         delta1 = delta1 + np.dot(little_delta_2, Xi.T)
         delta2 = delta2 + np.dot(little_delta_3, a2.T)
@@ -112,16 +117,15 @@ def costFunction(p):
     J, grad = nnCostFunction(p, input_layer_size,
                              hidden_layer_size, num_labels,
                              X, y, lambdaa)
-
     return J
+
 
 def gradCostFunction(p):
     J, grad = nnCostFunction(p, input_layer_size,
                              hidden_layer_size, num_labels,
                              X, y, lambdaa)
-
     return grad
 
 
 nn_params = scipy.optimize.fmin_cg(costFunction, initial_nn_params,
-                                   gradCostFunction, maxIter=5)
+                                   gradCostFunction, maxiter=5)
